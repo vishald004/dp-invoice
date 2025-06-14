@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DP ENTERPRISES</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f2f2f2;
+    }
+
+    .invoice-container {
+      width: 210mm;
+      background: #fff;
+      padding: 30px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .small { font-size: 0.9rem; text-align: center; }
+
+    .top-details {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .bill-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 5px;
+    }
+
+    .bill-info p {
+      margin: 0;
+    }
+
+  .bill-info input {
+  width: 140px;
+  height: 20px;
+  padding: 4px;
+  display: block;
+  border: 2px solid #000; /* Thick dark border */
+  outline: none;           /* Remove default outline */
+  font-weight: bold;       /* Optional: make text bold for clarity */
+}
+
+
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .invoice-table th, .invoice-table td {
+      border: 1px solid #000;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .invoice-table th {
+      background: #eee;
+    }
+
+    .amounts {
+      margin-top: 20px;
+      width: 30%;
+      margin-left: auto;
+      border: 1px solid #000;
+      padding: 10px;
+    }
+
+    .amounts p {
+      margin: 4px 0;
+      display: flex;
+      justify-content: space-between;
+      color: #333;
+      line-height: 1.2;
+      gap: 5px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      text-align: right;
+      line-height: 2;
+    }
+
+    .print-btn, .add-row-btn, .delete-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: black;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      padding: 4px 10px;
+      background: red;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    @media print {
+      .print-btn, .add-row-btn, .delete-btn,
+      .invoice-table th:nth-child(8),
+      .invoice-table td:nth-child(8) {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="invoice-container">
+  <h4 class="center">INVOICE</h4>
+  <h1 class="center bold">M/S DP ENTERPRISES</h1>
+  <p class="small">
+    <strong>Deal In:</strong> Civil Work, Housekeeping, Painting, Pest Control, Furniture, etc.<br>
+  <strong>Address:</strong> Village Sehrala, P.O. Dhatir, Tehsil Prithla, District Palwal, Haryana – 121102<br>
+  <strong>Contact:</strong> +91 9958161487, +91 9871064173<br>
+  <strong>Email:</strong> deshpaldinday@gmail.com						
+  </p>
+
+  <div class="top-details">
+    <div>
+      <p><strong>Bharat Petroleum Corp. Ltd.</strong></p>
+      <p>Piyala LPG Bottling Plant / E & P</p>
+      <p>Vill. Piyala, PO Asaoti, Teh. Ballabgarh, Faridabad - 121004</p>
+      <p>Vendor Code: 169717</p>
+      <p>PO NO:</p>
+    </div>
+    <div class="bill-info">
+      <p><strong>BILL NO:</strong> <input type="text" /></p>
+      <p><strong>DATE:</strong> <input type="text" /></p>
+    </div>
+  </div>
+
+  <table class="invoice-table">
+    <thead>
+      <tr>
+        <th style="width: 40px;">Sr. No.</th>
+        <th>Item Detail</th>
+        <th>HSN / SAC</th>
+        <th>Qty</th>
+        <th>Unit</th>
+        <th>Rate</th>
+        <th>Amount</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody id="item-rows">
+      <tr>
+        <td>1</td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true" class="qty"></td>
+        <td contenteditable="true"></td>
+        <td contenteditable="true" class="rate"></td>
+        <td class="amount"></td>
+        <td><button class="delete-btn" onclick="deleteRow(this)">🗑️</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button class="add-row-btn" onclick="addRow()">➕ Add Row</button>
+
+  <div class="amounts">
+    <p class="bold">TOTAL AMT.: <span id="total">0.00</span></p>
+  </div>
+
+  <p><strong>Amount (in words):</strong> <span id="in-words">Zero Rupees Only</span></p>
+
+  <div class="footer">
+    <p>FOR DP ENTERPRISES</p>
+    <p>Auth Signatory</p>
+  </div>
+
+  <button onclick="window.print()" class="print-btn">🖨️ Print Invoice</button>
+</div>
+
+<script>
+  function calculate() {
+    const rows = document.querySelectorAll("#item-rows tr");
+    let total = 0;
+
+    rows.forEach(row => {
+      const qty = parseFloat(row.querySelector(".qty")?.innerText) || 0;
+      const rate = parseFloat(row.querySelector(".rate")?.innerText) || 0;
+      const amt = qty * rate;
+      row.querySelector(".amount").innerText = amt.toFixed(2);
+      total += amt;
+    });
+
+    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("in-words").innerText = numberToWords(total);
+  }
+
+  function numberToWords(amount) {
+    const [rupees, paise] = amount.toFixed(2).split('.');
+    const words = (n) => {
+      const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+        "Seventeen", "Eighteen", "Nineteen"];
+      const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+      const num = parseInt(n, 10);
+      if (num === 0) return "Zero";
+      if (num < 20) return a[num];
+      if (num < 100) return b[Math.floor(num / 10)] + (num % 10 ? " " + a[num % 10] : "");
+      if (num < 1000) return a[Math.floor(num / 100)] + " Hundred " + (num % 100 !== 0 ? "and " + words(num % 100) : "");
+      if (num < 100000) return words(Math.floor(num / 1000)) + " Thousand " + words(num % 1000);
+      if (num < 10000000) return words(Math.floor(num / 100000)) + " Lakh " + words(num % 100000);
+      return words(Math.floor(num / 10000000)) + " Crore " + words(num % 10000000);
+    };
+
+    let result = words(rupees) + " Rupees";
+    if (parseInt(paise) > 0) {
+      result += " and " + words(paise) + " Paise";
+    }
+    return result + " Only";
+  }
+
+  function addRow() {
+    const tbody = document.getElementById("item-rows");
+    const rowCount = tbody.rows.length + 1;
+    const newRow = document.createElement("tr");
+    newRow.innerHTML = `
+      <td>${rowCount}</td>
+      <td contenteditable="true"></td>
+      <td contenteditable="true"></td>
+      <td contenteditable="true" class="qty"></td>
+      <td contenteditable="true"></td>
+      <td contenteditable="true" class="rate"></td>
+      <td class="amount"></td>
+      <td><button class="delete-btn" onclick="deleteRow(this)">🗑️</button></td>
+    `;
+    tbody.appendChild(newRow);
+  }
+
+  function deleteRow(btn) {
+    const row = btn.closest("tr");
+    row.remove();
+    renumberRows();
+    calculate();
+  }
+
+  function renumberRows() {
+    const rows = document.querySelectorAll("#item-rows tr");
+    rows.forEach((row, index) => {
+      row.querySelector("td").innerText = index + 1;
+    });
+  }
+
+  document.addEventListener("input", calculate);
+  window.onload = calculate;
+</script>
+</body>
+</html>
